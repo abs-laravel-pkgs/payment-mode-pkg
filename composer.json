@@ -1,0 +1,31 @@
+{
+    "name": "abs/payment-mode-pkg",
+    "description": "For PaymentMode CRUD",
+    "type": "library",
+    "require":
+    {},
+    "require-dev":
+    {},
+    "authors": [
+    {
+        "name": "Abdul",
+        "email": "abdulpro@gmail.com"
+    }],
+    "minimum-stability": "dev",
+    "extra":
+    {
+        "laravel":
+        {
+            "providers": [
+                "Abs\\PaymentModePkg\\PaymentModePkgServiceProvider"
+            ]
+        }
+    },
+    "autoload":
+    {
+        "psr-4":
+        {
+            "Abs\\PaymentModePkg\\": "src/"
+        }
+    }
+}
