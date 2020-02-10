@@ -1,4 +1,4 @@
-@if(config('PAYMENT_MODE_PKG.DEV'))
+@if(config('payment-mode-pkg.DEV'))
     <?php $payment_mode_pkg_prefix = '/packages/abs/payment-mode-pkg/src';?>
 @else
     <?php $payment_mode_pkg_prefix = '';?>
