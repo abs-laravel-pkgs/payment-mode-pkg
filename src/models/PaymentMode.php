@@ -14,8 +14,10 @@ class PaymentMode extends Model {
 	protected $table = 'payment_modes';
 	public $timestamps = true;
 	protected $fillable = [
-		'question',
-		'answer',
+		'name',
+		'code',
+		'description',
+		'display_order',
 	];
 
 	public static function createFromObject($record_data) {

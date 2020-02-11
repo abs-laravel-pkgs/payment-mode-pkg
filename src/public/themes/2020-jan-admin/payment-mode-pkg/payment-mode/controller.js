@@ -21,8 +21,6 @@ app.component('paymentModeList', {
         $scope.loading = true;
         var self = this;
         self.hasPermission = HelperService.hasPermission;
-        var table_scroll;
-        table_scroll = $('.page-main-content').height() - 37;
         var dataTable = $('#payment_modes_list').DataTable({
             "dom": dom_structure,
             "language": {
@@ -46,7 +44,10 @@ app.component('paymentModeList', {
             },
             columns: [
                 { data: 'action', searchable: false, class: 'action' },
-                { data: 'question', name: 'payment_modes.question', searchable: true },
+                { data: 'name', name: 'payment_modes.name', searchable: true },
+                { data: 'code', name: 'payment_modes.code', searchable: true },
+                { data: 'description', name: 'payment_modes.description', searchable: true },
+                { data: 'display_order', name: 'payment_modes.display_order', searchable: false },
             ],
             "infoCallback": function(settings, start, end, max, total, pre) {
                 $('#table_info').html(total + '/' + max)
@@ -63,7 +64,7 @@ app.component('paymentModeList', {
         $('.page-header-content .search.display-inline-block .add_close_button').html('<button type="button" class="btn btn-img btn-add-close"><img src="' + image_scr2 + '" class="img-responsive"></button>');
         $('.page-header-content .refresh.display-inline-block').html('<button type="button" class="btn btn-refresh"><img src="' + image_scr3 + '" class="img-responsive"></button>');
         $('.add_new_button').html(
-            '<a href="#!/payment-mode-pkg/payment_mode/add" type="button" class="btn btn-secondary" dusk="add-btn">' +
+            '<a href="#!/payment-mode-pkg/payment-mode/add" type="button" class="btn btn-secondary" dusk="add-btn">' +
             'Add Payment Mode' +
             '</a>'
         );
@@ -76,18 +77,6 @@ app.component('paymentModeList', {
             $('#payment_modes_list').DataTable().ajax.reload();
         });
 
-        $('.dataTables_length select').select2();
-
-        $scope.clear_search = function() {
-            $('#search_payment_mode').val('');
-            $('#payment_modes_list').DataTable().search('').draw();
-        }
-
-        var dataTables = $('#payment_modes_list').dataTable();
-        $("#search_payment_mode").keyup(function() {
-            dataTables.fnFilter(this.value);
-        });
-
         //DELETE
         $scope.deletePaymentMode = function($id) {
             $('#payment_mode_id').val($id);
@@ -95,25 +84,24 @@ app.component('paymentModeList', {
         $scope.deleteConfirm = function() {
             $id = $('#payment_mode_id').val();
             $http.get(
-                payment_mode_delete_data_url + '/' + $id,
+                laravel_routes['deletePaymentMode'], {
+                    params: {
+                        id: $id,
+                    }
+                }
             ).then(function(response) {
                 if (response.data.success) {
-                    $noty = new Noty({
-                        type: 'success',
-                        layout: 'topRight',
-                        text: 'PaymentMode Deleted Successfully',
-                    }).show();
-                    setTimeout(function() {
-                        $noty.close();
-                    }, 3000);
-                    $('#payment_modes_list').DataTable().ajax.reload(function(json) {});
-                    $location.path('/payment-mode-pkg/payment_mode/list');
+                    custom_noty('success', response.data.message);
+                    $('#payment_modes_list').DataTable().ajax.reload();
+                    $scope.$apply();
+                } else {
+                    custom_noty('error', response.data.errors);
                 }
             });
         }
 
         //FOR FILTER
-        $('#payment_mode_code').on('keyup', function() {
+        /*$('#payment_mode_code').on('keyup', function() {
             dataTables.fnFilter();
         });
         $('#payment_mode_name').on('keyup', function() {
@@ -131,7 +119,7 @@ app.component('paymentModeList', {
             $("#mobile_no").val('');
             $("#email").val('');
             dataTables.fnFilter();
-        }
+        }*/
 
         $rootScope.loading = false;
     }
@@ -141,10 +129,10 @@ app.component('paymentModeList', {
 app.component('paymentModeForm', {
     templateUrl: payment_mode_form_template_url,
     controller: function($http, $location, HelperService, $scope, $routeParams, $rootScope) {
-        get_form_data_url = typeof($routeParams.id) == 'undefined' ? laravel_routes['getPaymentModeFormData'] : laravel_routes['getPaymentModeFormData'] + '/' + $routeParams.id;
         var self = this;
         self.hasPermission = HelperService.hasPermission;
         self.angular_routes = angular_routes;
+        fileUpload();
         $http({
             url: laravel_routes['getPaymentModeFormData'],
             method: 'GET',
@@ -153,7 +141,9 @@ app.component('paymentModeForm', {
             }
         }).then(function(response) {
             self.payment_mode = response.data.payment_mode;
+            self.attachment = response.data.attachment;
             self.action = response.data.action;
+            self.theme = response.data.theme;
             $rootScope.loading = false;
             if (self.action == 'Edit') {
                 if (self.payment_mode.deleted_at) {
@@ -161,28 +151,57 @@ app.component('paymentModeForm', {
                 } else {
                     self.switch_value = 'Active';
                 }
+                if (self.attachment) {
+                    $scope.PreviewImage = 'public/themes/' + self.theme + '/img/payment_mode_logo/' + self.attachment.name;
+                    $('#edited_file_name').val(self.attachment.name);
+                } else {
+                    $('#edited_file_name').val('');
+                }
             } else {
                 self.switch_value = 'Active';
             }
         });
 
+        $scope.SelectFile = function(e) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                $scope.PreviewImage = e.target.result;
+                $scope.$apply();
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        };
+
         var form_id = '#form';
         var v = jQuery(form_id).validate({
             ignore: '',
             rules: {
-                'question': {
+                'name': {
+                    required: true,
+                    minlength: 3,
+                    maxlength: 191,
+                },
+                'code': {
+                    required: true,
+                    minlength: 3,
+                    maxlength: 191,
+                },
+                'description': {
                     required: true,
                     minlength: 3,
                     maxlength: 255,
                 },
-                'answer': {
+                'display_order': {
                     required: true,
-                    minlength: 3,
-                    maxlength: 255,
+                    number: true,
+                },
+                'logo_id': {
+                    extension: "jpg|jpeg|png|ico|bmp|svg|gif",
                 },
             },
-            invalidHandler: function(event, validator) {
-                checkAllTabNoty()
+            messages: {
+                'logo_id': {
+                    extension: "Accept Image Files Only. Eg: jpg,jpeg,png,ico,bmp,svg,gif"
+                }
             },
             submitHandler: function(form) {
                 let formData = new FormData($(form_id)[0]);
@@ -202,7 +221,11 @@ app.component('paymentModeForm', {
                         } else {
                             if (!res.success == true) {
                                 $('#submit').button('reset');
-                                showErrorNoty(res)
+                                var errors = '';
+                                for (var i in res.errors) {
+                                    errors += '<li>' + res.errors[i] + '</li>';
+                                }
+                                custom_noty('error', errors);
                             } else {
                                 $('#submit').button('reset');
                                 $location.path('/payment-mode-pkg/payment-mode/list');
@@ -212,7 +235,7 @@ app.component('paymentModeForm', {
                     })
                     .fail(function(xhr) {
                         $('#submit').button('reset');
-                        showServerErrorNoty()
+                        custom_noty('error', 'Something went wrong at server');
                     });
             }
         });
