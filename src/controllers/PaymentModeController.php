@@ -193,8 +193,12 @@ class PaymentModeController extends Controller {
 	public function deletePaymentMode(Request $request) {
 		DB::beginTransaction();
 		try {
+			$payment_mode = PaymentMode::withTrashed()->where('id', $request->id)->first();
+			if (!is_null($payment_mode->logo_id)) {
+				Attachment::where('attachment_of_id', 20)->where('entity_id', $request->id)->forceDelete();
+			}
 			PaymentMode::withTrashed()->where('id', $request->id)->forceDelete();
-			Attachment::where('attachment_of_id', 20)->where('entity_id', $request->id)->forceDelete();
+
 			DB::commit();
 			return response()->json(['success' => true, 'message' => 'Payment Mode Deleted Successfully']);
 		} catch (Exception $e) {
