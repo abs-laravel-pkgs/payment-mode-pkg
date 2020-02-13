@@ -195,7 +195,7 @@ class PaymentModeController extends Controller {
 		try {
 			$payment_mode = PaymentMode::withTrashed()->where('id', $request->id)->first();
 			if (!is_null($payment_mode->logo_id)) {
-				Attachment::where('attachment_of_id', 20)->where('entity_id', $request->id)->forceDelete();
+				Attachment::where('company_id', Auth::user()->company_id)->where('attachment_of_id', 20)->where('entity_id', $request->id)->forceDelete();
 			}
 			PaymentMode::withTrashed()->where('id', $request->id)->forceDelete();
 
