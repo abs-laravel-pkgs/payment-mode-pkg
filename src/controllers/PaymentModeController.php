@@ -1,7 +1,7 @@
 <?php
 
 namespace Abs\PaymentModePkg;
-use Abs\Basic\Attachment;
+use Abs\BasicPkg\Attachment;
 use Abs\PaymentModePkg\PaymentMode;
 use App\Http\Controllers\Controller;
 use Auth;
