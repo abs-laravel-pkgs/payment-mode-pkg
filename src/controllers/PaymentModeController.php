@@ -1,9 +1,9 @@
 <?php
 
 namespace Abs\PaymentModePkg;
-use Abs\BasicPkg\Attachment;
 use Abs\PaymentModePkg\PaymentMode;
 use App\Http\Controllers\Controller;
+use App\Models\Attachment;
 use Auth;
 use Carbon\Carbon;
 use DB;
