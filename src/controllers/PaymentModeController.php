@@ -1,7 +1,8 @@
 <?php
 
 namespace Abs\PaymentModePkg;
-use App\Http\Controllers\Controller;
+use Abs\BasicPkg\Traits\CrudTrait;
+use App\Http\Controllers\Core\BaseController;
 use App\Models\Attachment;
 use Auth;
 use Carbon\Carbon;
@@ -11,7 +12,9 @@ use Illuminate\Http\Request;
 use Validator;
 use Yajra\Datatables\Datatables;
 
-class PaymentModeController extends Controller {
+class PaymentModeController extends BaseController {
+	use CrudTrait;
+	public $model = \App\Models\PaymentMode::class;
 
 	public $company_id;
 	public function __construct() {

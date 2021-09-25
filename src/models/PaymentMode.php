@@ -2,13 +2,15 @@
 
 namespace Abs\PaymentModePkg;
 
+use Abs\CompanyPkg\Traits\CompanyableTrait;
 use Abs\HelperPkg\Traits\SeederTrait;
 use App\Company;
 use App\Config;
-use Illuminate\Database\Eloquent\Model;
+use App\Models\BaseModel;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class PaymentMode extends Model {
+class PaymentMode extends BaseModel {
+	use CompanyableTrait;
 	use SeederTrait;
 	use SoftDeletes;
 	protected $table = 'payment_modes';
